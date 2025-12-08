@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/wailsapp/wails/v3/pkg/application"
 	"io"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/wailsapp/wails/v3/pkg/application"
 
 	"dario.cat/mergo"
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/config"
@@ -118,7 +119,7 @@ func (d *DmgService) UpdateDiscordStatus(status types.OnlineStatus) {
 
 		presenceUpdate := gateway.MessageDataPresenceUpdate{
 			Since:      new(int64),
-			Activities: []map[string]interface{}{},
+			Activities: []map[string]any{},
 			Status:     status,
 			AFK:        false,
 		}
@@ -137,7 +138,7 @@ func (d *DmgService) CheckForUpdates() bool {
 	newVersion, changes := utils.CheckForUpdates(currentVersion)
 
 	if newVersion != "" && newVersion != currentVersion {
-		application.Get().CurrentWindow().SetURL("/#/update")
+		application.Get().Window.Current().SetURL("/#/update")
 		time.Sleep(500 * time.Millisecond)
 		utils.EmitEventIfNotCLI("updateChanges", currentVersion, newVersion, changes)
 		return true
@@ -147,7 +148,7 @@ func (d *DmgService) CheckForUpdates() bool {
 }
 
 func (d *DmgService) Update() {
-	if application.Get().Environment().Debug {
+	if application.Get().Env.Info().Debug {
 		utils.EmitEventIfNotCLI("updateFailed", "Debug environment detected. Update using git instead.")
 		return
 	}

@@ -18,6 +18,14 @@ const (
 	RoleSelectMenuComponent        ComponentType = 6
 	MentionableSelectMenuComponent ComponentType = 7
 	ChannelSelectMenuComponent     ComponentType = 8
+	SectionComponent               ComponentType = 9
+	TextDisplayComponent           ComponentType = 10
+	ThumbnailComponent             ComponentType = 11
+	MediaGalleryComponent          ComponentType = 12
+	FileComponentType              ComponentType = 13
+	SeparatorComponent             ComponentType = 14
+	ContainerComponent             ComponentType = 17
+	LabelComponent                 ComponentType = 18
 )
 
 // MessageComponent is a base interface for all message components.
@@ -50,6 +58,22 @@ func (umc *unmarshalableMessageComponent) UnmarshalJSON(src []byte) error {
 		umc.MessageComponent = &SelectMenu{}
 	case TextInputComponent:
 		umc.MessageComponent = &TextInput{}
+	case SectionComponent:
+		umc.MessageComponent = &Section{}
+	case TextDisplayComponent:
+		umc.MessageComponent = &TextDisplay{}
+	case ThumbnailComponent:
+		umc.MessageComponent = &Thumbnail{}
+	case MediaGalleryComponent:
+		umc.MessageComponent = &MediaGallery{}
+	case FileComponentType:
+		umc.MessageComponent = &FileComponent{}
+	case SeparatorComponent:
+		umc.MessageComponent = &Separator{}
+	case ContainerComponent:
+		umc.MessageComponent = &Container{}
+	case LabelComponent:
+		umc.MessageComponent = &Label{}
 	default:
 		return fmt.Errorf("unknown component type: %d", v.Type)
 	}
@@ -66,9 +90,13 @@ func MessageComponentFromJSON(b []byte) (MessageComponent, error) {
 	return u.MessageComponent, nil
 }
 
-// ActionsRow is a container for components within one row.
+// ActionsRow is a top-level container component for displaying a row of interactive components.
 type ActionsRow struct {
+	// Can contain Button, SelectMenu and TextInput.
+	// NOTE: maximum of 5.
 	Components []MessageComponent `json:"components"`
+	// Unique identifier for the component; auto populated through increment if not provided.
+	ID int `json:"id,omitempty"`
 }
 
 // MarshalJSON is a method for marshaling ActionsRow to a JSON object.
@@ -86,13 +114,17 @@ func (r ActionsRow) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a helper function to unmarshal Actions Row.
 func (r *ActionsRow) UnmarshalJSON(data []byte) error {
+	type actionsRow ActionsRow
 	var v struct {
+		actionsRow
 		RawComponents []unmarshalableMessageComponent `json:"components"`
 	}
 	err := json.Unmarshal(data, &v)
 	if err != nil {
 		return err
 	}
+	*r = ActionsRow(v.actionsRow)
+
 	r.Components = make([]MessageComponent, len(v.RawComponents))
 	for i, v := range v.RawComponents {
 		r.Components[i] = v.MessageComponent
@@ -121,6 +153,8 @@ const (
 	DangerButton ButtonStyle = 4
 	// LinkButton is a special type of button which navigates to a URL. Has grey color.
 	LinkButton ButtonStyle = 5
+	// PremiumButton is a special type of button with a blurple color that links to a SKU.
+	PremiumButton ButtonStyle = 6
 )
 
 // ComponentEmoji represents button emoji, if it does have one.
@@ -132,14 +166,18 @@ type ComponentEmoji struct {
 
 // Button represents button component.
 type Button struct {
-	Label    string         `json:"label"`
-	Style    ButtonStyle    `json:"style"`
-	Disabled bool           `json:"disabled"`
-	Emoji    ComponentEmoji `json:"emoji"`
+	Label    string          `json:"label"`
+	Style    ButtonStyle     `json:"style"`
+	Disabled bool            `json:"disabled"`
+	Emoji    *ComponentEmoji `json:"emoji,omitempty"`
 
 	// NOTE: Only button with LinkButton style can have link. Also, URL is mutually exclusive with CustomID.
 	URL      string `json:"url,omitempty"`
 	CustomID string `json:"custom_id,omitempty"`
+	// Identifier for a purchasable SKU. Only available when using premium-style buttons.
+	SKUID string `json:"sku_id,omitempty"`
+	// Unique identifier for the component; auto populated through increment if not provided.
+	ID int `json:"id,omitempty"`
 }
 
 // MarshalJSON is a method for marshaling Button to a JSON object.
@@ -166,10 +204,10 @@ func (Button) Type() ComponentType {
 
 // SelectMenuOption represents an option for a select menu.
 type SelectMenuOption struct {
-	Label       string         `json:"label,omitempty"`
-	Value       string         `json:"value"`
-	Description string         `json:"description"`
-	Emoji       ComponentEmoji `json:"emoji"`
+	Label       string          `json:"label,omitempty"`
+	Value       string          `json:"value"`
+	Description string          `json:"description"`
+	Emoji       *ComponentEmoji `json:"emoji,omitempty"`
 	// Determines whenever option is selected by default or not.
 	Default bool `json:"default"`
 }
@@ -204,6 +242,8 @@ const (
 	ChannelSelectMenu     = SelectMenuType(ChannelSelectMenuComponent)
 )
 
+type ChannelType int
+
 // SelectMenu represents select menu component.
 type SelectMenu struct {
 	// Type of the select menu.
@@ -223,6 +263,15 @@ type SelectMenu struct {
 
 	Options  []SelectMenuOption `json:"options,omitempty"`
 	Disabled bool               `json:"disabled"`
+
+	// NOTE: Can only be used in SelectMenu with Channel menu type.
+	ChannelTypes []ChannelType `json:"channel_types,omitempty"`
+
+	// Unique identifier for the component; auto populated through increment if not provided.
+	ID int `json:"id,omitempty"`
+
+	// List of values that is only populated when receiving an interaction response; do not fill this manually.
+	Values []string `json:"values,omitempty"`
 }
 
 // Type is a method to get the type of a component.
@@ -256,6 +305,9 @@ type TextInput struct {
 	Required    bool           `json:"required"`
 	MinLength   int            `json:"min_length,omitempty"`
 	MaxLength   int            `json:"max_length,omitempty"`
+
+	// Unique identifier for the component; auto populated through increment if not provided.
+	ID int `json:"id,omitempty"`
 }
 
 // Type is a method to get the type of a component.
@@ -284,3 +336,325 @@ const (
 	TextInputShort     TextInputStyle = 1
 	TextInputParagraph TextInputStyle = 2
 )
+
+// Section is a top-level layout component that allows you to join text contextually with an accessory.
+type Section struct {
+	// Unique identifier for the component; auto populated through increment if not provided.
+	ID int `json:"id,omitempty"`
+	// Array of text display components; max of 3.
+	Components []MessageComponent `json:"components"`
+	// Can be Button or Thumbnail
+	Accessory MessageComponent `json:"accessory"`
+}
+
+// UnmarshalJSON is a method for unmarshaling Section from JSON
+func (s *Section) UnmarshalJSON(data []byte) error {
+	type section Section
+
+	var v struct {
+		section
+		RawComponents []unmarshalableMessageComponent `json:"components"`
+		RawAccessory  unmarshalableMessageComponent   `json:"accessory"`
+	}
+
+	err := json.Unmarshal(data, &v)
+	if err != nil {
+		return err
+	}
+
+	*s = Section(v.section)
+	s.Accessory = v.RawAccessory.MessageComponent
+	s.Components = make([]MessageComponent, len(v.RawComponents))
+	for i, v := range v.RawComponents {
+		s.Components[i] = v.MessageComponent
+	}
+
+	return nil
+}
+
+// Type is a method to get the type of a component.
+func (Section) Type() ComponentType {
+	return SectionComponent
+}
+
+// MarshalJSON is a method for marshaling Section to a JSON object.
+func (s Section) MarshalJSON() ([]byte, error) {
+	type section Section
+
+	return json.Marshal(struct {
+		section
+		Type ComponentType `json:"type"`
+	}{
+		section: section(s),
+		Type:    s.Type(),
+	})
+}
+
+// TextDisplay is a top-level component that allows you to add markdown-formatted text to the message.
+type TextDisplay struct {
+	Content string `json:"content"`
+}
+
+// Type is a method to get the type of a component.
+func (TextDisplay) Type() ComponentType {
+	return TextDisplayComponent
+}
+
+// MarshalJSON is a method for marshaling TextDisplay to a JSON object.
+func (t TextDisplay) MarshalJSON() ([]byte, error) {
+	type textDisplay TextDisplay
+
+	return json.Marshal(struct {
+		textDisplay
+		Type ComponentType `json:"type"`
+	}{
+		textDisplay: textDisplay(t),
+		Type:        t.Type(),
+	})
+}
+
+// Thumbnail component can be used as an accessory for a section component.
+type Thumbnail struct {
+	// Unique identifier for the component; auto populated through increment if not provided.
+	ID          int               `json:"id,omitempty"`
+	Media       UnfurledMediaItem `json:"media"`
+	Description *string           `json:"description,omitempty"`
+	Spoiler     bool              `json:"spoiler,omitempty"`
+}
+
+// Type is a method to get the type of a component.
+func (Thumbnail) Type() ComponentType {
+	return ThumbnailComponent
+}
+
+// MarshalJSON is a method for marshaling Thumbnail to a JSON object.
+func (t Thumbnail) MarshalJSON() ([]byte, error) {
+	type thumbnail Thumbnail
+
+	return json.Marshal(struct {
+		thumbnail
+		Type ComponentType `json:"type"`
+	}{
+		thumbnail: thumbnail(t),
+		Type:      t.Type(),
+	})
+}
+
+// MediaGallery is a top-level component allows you to group images, videos or gifs into a gallery grid.
+type MediaGallery struct {
+	// Unique identifier for the component; auto populated through increment if not provided.
+	ID int `json:"id,omitempty"`
+	// Array of media gallery items; max of 10.
+	Items []MediaGalleryItem `json:"items"`
+}
+
+// Type is a method to get the type of a component.
+func (MediaGallery) Type() ComponentType {
+	return MediaGalleryComponent
+}
+
+// MarshalJSON is a method for marshaling MediaGallery to a JSON object.
+func (m MediaGallery) MarshalJSON() ([]byte, error) {
+	type mediaGallery MediaGallery
+
+	return json.Marshal(struct {
+		mediaGallery
+		Type ComponentType `json:"type"`
+	}{
+		mediaGallery: mediaGallery(m),
+		Type:         m.Type(),
+	})
+}
+
+// MediaGalleryItem represents an item used in MediaGallery.
+type MediaGalleryItem struct {
+	Media       UnfurledMediaItem `json:"media"`
+	Description *string           `json:"description,omitempty"`
+	Spoiler     bool              `json:"spoiler"`
+}
+
+// FileComponent is a top-level component that allows you to display an uploaded file as an attachment to the message and reference it in the component.
+type FileComponent struct {
+	// Unique identifier for the component; auto populated through increment if not provided.
+	ID      int               `json:"id,omitempty"`
+	File    UnfurledMediaItem `json:"file"`
+	Spoiler bool              `json:"spoiler"`
+}
+
+// Type is a method to get the type of a component.
+func (FileComponent) Type() ComponentType {
+	return FileComponentType
+}
+
+// MarshalJSON is a method for marshaling FileComponent to a JSON object.
+func (f FileComponent) MarshalJSON() ([]byte, error) {
+	type fileComponent FileComponent
+
+	return json.Marshal(struct {
+		fileComponent
+		Type ComponentType `json:"type"`
+	}{
+		fileComponent: fileComponent(f),
+		Type:          f.Type(),
+	})
+}
+
+// SeparatorSpacingSize represents spacing size around the separator.
+type SeparatorSpacingSize uint
+
+// Separator spacing sizes.
+const (
+	SeparatorSpacingSizeSmall SeparatorSpacingSize = 1
+	SeparatorSpacingSizeLarge SeparatorSpacingSize = 2
+)
+
+// Separator is a top-level layout component that adds vertical padding and visual division between other components.
+type Separator struct {
+	// Unique identifier for the component; auto populated through increment if not provided.
+	ID int `json:"id,omitempty"`
+
+	Divider *bool                 `json:"divider,omitempty"`
+	Spacing *SeparatorSpacingSize `json:"spacing,omitempty"`
+}
+
+// Type is a method to get the type of a component.
+func (Separator) Type() ComponentType {
+	return SeparatorComponent
+}
+
+// MarshalJSON is a method for marshaling Separator to a JSON object.
+func (s Separator) MarshalJSON() ([]byte, error) {
+	type separator Separator
+
+	return json.Marshal(struct {
+		separator
+		Type ComponentType `json:"type"`
+	}{
+		separator: separator(s),
+		Type:      s.Type(),
+	})
+}
+
+// Container is a top-level layout component.
+// Containers are visually distinct from surrounding components and have an optional customizable color bar (similar to embeds).
+type Container struct {
+	// Unique identifier for the component; auto populated through increment if not provided.
+	ID          int                `json:"id,omitempty"`
+	AccentColor *int               `json:"accent_color,omitempty"`
+	Spoiler     bool               `json:"spoiler"`
+	Components  []MessageComponent `json:"components"`
+}
+
+// Type is a method to get the type of a component.
+func (Container) Type() ComponentType {
+	return ContainerComponent
+}
+
+// UnmarshalJSON is a method for unmarshaling Container from JSON
+func (c *Container) UnmarshalJSON(data []byte) error {
+	type container Container
+
+	var v struct {
+		container
+		RawComponents []unmarshalableMessageComponent `json:"components"`
+	}
+
+	err := json.Unmarshal(data, &v)
+	if err != nil {
+		return err
+	}
+
+	*c = Container(v.container)
+	c.Components = make([]MessageComponent, len(v.RawComponents))
+	for i, v := range v.RawComponents {
+		c.Components[i] = v.MessageComponent
+	}
+
+	return nil
+}
+
+// MarshalJSON is a method for marshaling Container to a JSON object.
+func (c Container) MarshalJSON() ([]byte, error) {
+	type container Container
+
+	return json.Marshal(struct {
+		container
+		Type ComponentType `json:"type"`
+	}{
+		container: container(c),
+		Type:      c.Type(),
+	})
+}
+
+// Label is a top-level layout component.
+// Labels wrap modal components with text as a label and optional description.
+type Label struct {
+	// Unique identifier for the component; auto populated through increment if not provided.
+	ID          int              `json:"id,omitempty"`
+	Label       string           `json:"label"`
+	Description string           `json:"description,omitempty"`
+	Component   MessageComponent `json:"component"`
+}
+
+// Type is a method to get the type of a component.
+func (Label) Type() ComponentType {
+	return LabelComponent
+}
+
+// UnmarshalJSON is a method for unmarshaling Label from JSON
+func (l *Label) UnmarshalJSON(data []byte) error {
+	type label Label
+
+	var v struct {
+		label
+		RawComponent unmarshalableMessageComponent `json:"component"`
+	}
+
+	err := json.Unmarshal(data, &v)
+	if err != nil {
+		return err
+	}
+
+	*l = Label(v.label)
+	l.Component = v.RawComponent.MessageComponent
+
+	return nil
+}
+
+// MarshalJSON is a method for marshaling Label to a JSON object.
+func (l Label) MarshalJSON() ([]byte, error) {
+	type label Label
+
+	return json.Marshal(struct {
+		label
+		Type ComponentType `json:"type"`
+	}{
+		label: label(l),
+		Type:  l.Type(),
+	})
+}
+
+// UnfurledMediaItem represents an unfurled media item.
+type UnfurledMediaItem struct {
+	URL string `json:"url"`
+}
+
+// UnfurledMediaItemLoadingState is the loading state of the unfurled media item.
+type UnfurledMediaItemLoadingState uint
+
+// Unfurled media item loading states.
+const (
+	UnfurledMediaItemLoadingStateUnknown        UnfurledMediaItemLoadingState = 0
+	UnfurledMediaItemLoadingStateLoading        UnfurledMediaItemLoadingState = 1
+	UnfurledMediaItemLoadingStateLoadingSuccess UnfurledMediaItemLoadingState = 2
+	UnfurledMediaItemLoadingStateLoadedNotFound UnfurledMediaItemLoadingState = 3
+)
+
+// ResolvedUnfurledMediaItem represents a resolved unfurled media item.
+type ResolvedUnfurledMediaItem struct {
+	URL         string `json:"url"`
+	ProxyURL    string `json:"proxy_url"`
+	Width       int    `json:"width"`
+	Height      int    `json:"height"`
+	ContentType string `json:"content_type"`
+}

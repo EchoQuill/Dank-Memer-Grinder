@@ -4,19 +4,20 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 )
 
 //go:embed emojis.json
 var emojisJson []byte
 
-var emojis map[string]interface{}
+var emojis map[string]any
 
 func init() {
 	err := json.Unmarshal(emojisJson, &emojis)
@@ -36,7 +37,7 @@ func (in *Instance) EventsMessageCreate(message gateway.EventMessage) {
 			var answer string
 
 			for _, category := range trivia {
-				ans, ok := category.(map[string]interface{})[question]
+				ans, ok := category.(map[string]any)[question]
 				if !ok {
 					continue
 				}

@@ -3,11 +3,12 @@ package instance
 import (
 	"context"
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/config"
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
@@ -16,7 +17,7 @@ import (
 type Client interface {
 	SendMessage(op gateway.Opcode, data gateway.MessageData) error
 	Close()
-	AddHandler(event gateway.EventType, handler interface{}) error
+	AddHandler(event gateway.EventType, handler any) error
 	SendChatMessage(content string) error
 	SendCommand(name string, options map[string]string) error
 	SendSubCommand(name string, subCommandName string, options map[string]string) error

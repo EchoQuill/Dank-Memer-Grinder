@@ -114,7 +114,7 @@ type Bucket struct {
 
 	lastReset       time.Time
 	customRateLimit *customRateLimit
-	Userdata        interface{}
+	Userdata        any
 }
 
 func getDateHeader(headers []byte) string {

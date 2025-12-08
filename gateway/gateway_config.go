@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"fmt"
+
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"github.com/fasthttp/websocket"
 )
@@ -15,7 +16,7 @@ func DefaultConfig() *Config {
 
 	presence := MessageDataPresenceUpdate{
 		Since:      new(int64),
-		Activities: []map[string]interface{}{},
+		Activities: []map[string]any{},
 		Status:     cfg.DiscordStatus,
 		AFK:        false,
 	}

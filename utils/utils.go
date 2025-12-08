@@ -3,9 +3,6 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/config"
-	"github.com/valyala/fasthttp"
-	"github.com/wailsapp/wails/v3/pkg/application"
 	"log/slog"
 	"math/rand"
 	"os"
@@ -13,6 +10,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/config"
+	"github.com/valyala/fasthttp"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 var src = rand.NewSource(time.Now().UnixNano())
@@ -228,8 +229,8 @@ func SetCliMode(checker func() bool) {
 	isCliMode = checker
 }
 
-func EmitEventIfNotCLI(eventName string, args ...interface{}) {
+func EmitEventIfNotCLI(eventName string, args ...any) {
 	if !isCliMode() {
-		application.Get().EmitEvent(eventName, args...)
+		application.Get().Event.Emit(eventName, args...)
 	}
 }

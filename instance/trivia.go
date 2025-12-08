@@ -4,9 +4,10 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
 	"regexp"
 	"strings"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
 
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
@@ -15,7 +16,7 @@ import (
 //go:embed trivia.json
 var triviaJson []byte
 
-var trivia map[string]interface{}
+var trivia map[string]any
 
 func init() {
 	err := json.Unmarshal(triviaJson, &trivia)
@@ -32,7 +33,7 @@ func (in *Instance) Trivia(message gateway.EventMessage) {
 	re := regexp.MustCompile(`\*\*(.*?)\*\*`)
 	question := strings.Trim(re.FindStringSubmatch(embed.Description)[0], "*")
 
-	answer, ok := trivia[category].(map[string]interface{})[question]
+	answer, ok := trivia[category].(map[string]any)[question]
 	if !ok {
 		utils.Log(utils.Others, utils.Error, in.SafeGetUsername(), fmt.Sprintf("Question not found in trivia data: %v", question))
 		in.clickButtonBasedOnCondition(buttons, message, "", false)

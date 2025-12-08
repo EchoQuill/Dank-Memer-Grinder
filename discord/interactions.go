@@ -3,12 +3,13 @@ package discord
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"math/big"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
 )
@@ -40,7 +41,7 @@ func (client *Client) GetCommandInfo(commandName string) *CommandData {
 	return nil
 }
 
-func (client *Client) sendRequest(url string, payload map[string]interface{}) error {
+func (client *Client) sendRequest(url string, payload map[string]any) error {
 	if payload["guild_id"] == "" {
 		payload["guild_id"] = nil
 	}
@@ -63,7 +64,7 @@ func (client *Client) sendRequest(url string, payload map[string]interface{}) er
 func (client *Client) SendChatMessage(content string) error {
 	interactionsUrl := fmt.Sprintf("https://discord.com/api/v9/channels/%s/messages", client.ChannelID)
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"content": content,
 		"flags":   0,
 		"tts":     false,
@@ -112,13 +113,13 @@ func (client *Client) SendCommand(commandName string, options map[string]string)
 		}
 	}
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"type":           2,
 		"application_id": "270904126974590976",
 		"guild_id":       client.GuildID,
 		"channel_id":     client.ChannelID,
 		"session_id":     sessionID,
-		"data": map[string]interface{}{
+		"data": map[string]any{
 			"version": commandInfo.Version,
 			"id":      commandInfo.ID,
 			"name":    commandInfo.Name,
@@ -168,18 +169,18 @@ func (client *Client) SendSubCommand(commandName string, subCommandName string, 
 		}
 	}
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"type":           2,
 		"application_id": "270904126974590976",
 		"guild_id":       client.GuildID,
 		"channel_id":     client.ChannelID,
 		"session_id":     sessionID,
-		"data": map[string]interface{}{
+		"data": map[string]any{
 			"version": commandInfo.Version,
 			"id":      commandInfo.ID,
 			"name":    commandInfo.Name,
 			"type":    1,
-			"options": []map[string]interface{}{
+			"options": []map[string]any{
 				{
 					"type":    1,
 					"name":    subCommandName,
@@ -215,7 +216,7 @@ func (client *Client) ClickButton(message gateway.EventMessage, row int, column 
 		message.GuildID = client.GuildID
 	}
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"type":           3,
 		"application_id": "270904126974590976",
 		"guild_id":       message.GuildID,
@@ -223,7 +224,7 @@ func (client *Client) ClickButton(message gateway.EventMessage, row int, column 
 		"message_id":     message.MessageID,
 		"session_id":     sessionID,
 		"message_flags":  message.Flags,
-		"data": map[string]interface{}{
+		"data": map[string]any{
 			"component_type": 2,
 			"custom_id":      message.Components[row].(*types.ActionsRow).Components[column].(*types.Button).CustomID,
 		},
@@ -238,7 +239,7 @@ func (client *Client) ClickDmButton(message gateway.EventMessage, row int, colum
 		return err
 	}
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"type":           3,
 		"application_id": "270904126974590976",
 		"guild_id":       nil,
@@ -246,7 +247,7 @@ func (client *Client) ClickDmButton(message gateway.EventMessage, row int, colum
 		"message_id":     message.MessageID,
 		"session_id":     sessionID,
 		"message_flags":  message.Flags,
-		"data": map[string]interface{}{
+		"data": map[string]any{
 			"component_type": 2,
 			"custom_id":      message.Components[row].(*types.ActionsRow).Components[column].(*types.Button).CustomID,
 		},
@@ -261,10 +262,10 @@ func (client *Client) ChooseSelectMenu(message gateway.EventMessage, row int, co
 		return err
 	}
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"application_id": "270904126974590976",
 		"channel_id":     message.ChannelID,
-		"data": map[string]interface{}{
+		"data": map[string]any{
 			"component_type": 3,
 			"custom_id":      message.Components[row].(*types.ActionsRow).Components[column].(*types.SelectMenu).CustomID,
 			"type":           3,
@@ -285,12 +286,12 @@ func (client *Client) SubmitModal(modal gateway.EventModalCreate) error {
 		return err
 	}
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"type":           5,
 		"application_id": "270904126974590976",
 		"channel_id":     modal.ChannelID,
 		"guild_id":       client.GuildID,
-		"data": map[string]interface{}{
+		"data": map[string]any{
 			"id":         modal.ID,
 			"custom_id":  modal.CustomID,
 			"components": modal.Components,
@@ -302,7 +303,7 @@ func (client *Client) SubmitModal(modal gateway.EventModalCreate) error {
 	return client.sendRequest("https://discord.com/api/v9/interactions", payload)
 }
 
-func addParamsToURL(baseURL string, params map[string]interface{}) string {
+func addParamsToURL(baseURL string, params map[string]any) string {
 	var queryParams []string
 	for key, value := range params {
 		queryParams = append(queryParams, fmt.Sprintf("%s=%s",
@@ -317,7 +318,7 @@ func addParamsToURL(baseURL string, params map[string]interface{}) string {
 }
 
 func (client *Client) GetAuthorizationCode() (string, error) {
-	urlParameters := map[string]interface{}{
+	urlParameters := map[string]any{
 		"client_id":     "270904126974590976",
 		"response_type": "code",
 		"redirect_uri":  "https://dankmemer.lol/api/auth/callback",
@@ -327,11 +328,11 @@ func (client *Client) GetAuthorizationCode() (string, error) {
 
 	fullUrl := addParamsToURL("https://discord.com/api/v9/oauth2/authorize", urlParameters)
 
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"authorize":        true,
 		"guild_id":         "846362236658515998",
 		"integration_type": 0,
-		"location_context": map[string]interface{}{
+		"location_context": map[string]any{
 			"guild_id":     "10000",
 			"channel_id":   "10000",
 			"channel_type": "10000",

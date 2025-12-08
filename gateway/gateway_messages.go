@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"fmt"
+
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
 
 	"github.com/goccy/go-json"
@@ -174,10 +175,10 @@ type IdentifyCommandDataProperties struct {
 
 // MessageDataPresenceUpdate is used for updating Client's presence
 type MessageDataPresenceUpdate struct {
-	Since      *int64                   `json:"since"`
-	Activities []map[string]interface{} `json:"activities"`
-	Status     types.OnlineStatus       `json:"status"`
-	AFK        bool                     `json:"afk"`
+	Since      *int64             `json:"since"`
+	Activities []map[string]any   `json:"activities"`
+	Status     types.OnlineStatus `json:"status"`
+	AFK        bool               `json:"afk"`
 }
 
 func (MessageDataPresenceUpdate) messageData() {}
