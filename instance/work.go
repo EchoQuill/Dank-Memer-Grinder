@@ -2,11 +2,12 @@ package instance
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
-	"regexp"
-	"strings"
 )
 
 const (
