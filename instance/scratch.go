@@ -2,18 +2,19 @@ package instance
 
 import (
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
 
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 )
 
 func (in *Instance) ScratchMessageCreate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 	if !strings.Contains(embed.Description, "You can scratch") {
 		return
 	}
@@ -29,7 +30,7 @@ func (in *Instance) ScratchMessageCreate(message gateway.EventMessage) {
 	} else {
 		if strings.Contains(embed.Description, "You can scratch only once") {
 			re := regexp.MustCompile(`Try <t:(\d+):R>`)
-			matches := re.FindStringSubmatch(message.Embeds[0].Description)
+			matches := re.FindStringSubmatch(embed.Description)
 
 			if len(matches) > 1 {
 				timestamp, err := strconv.ParseInt(matches[1], 10, 64)
@@ -48,7 +49,8 @@ func (in *Instance) ScratchMessageCreate(message gateway.EventMessage) {
 
 func (in *Instance) ScratchMessageUpdate(message gateway.EventMessage) {
 	re := regexp.MustCompile(`You can scratch \*\*(\d+)\*\* more field`)
-	matches := re.FindStringSubmatch(message.Embeds[0].Description)
+	embed := in.FetchEmbed(message, 0)
+	matches := re.FindStringSubmatch(embed.Description)
 
 	if len(matches) > 1 {
 		attemptsLeft, err := strconv.Atoi(matches[1])
@@ -66,7 +68,7 @@ func (in *Instance) ScratchMessageUpdate(message gateway.EventMessage) {
 			in.UnpauseCommands()
 
 			re = regexp.MustCompile(`Next Scratch-Off available <t:(\d+):R>`)
-			matches = re.FindStringSubmatch(message.Embeds[0].Description)
+			matches = re.FindStringSubmatch(embed.Description)
 
 			if len(matches) > 1 {
 				actionsRow, ok := message.Components[4].(*types.ActionsRow)

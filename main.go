@@ -150,15 +150,16 @@ func main() {
 	})
 
 	window := app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:         "Dank Memer Grinder",
-		Width:         1024,
-		Height:        768,
-		MinWidth:      1024,
-		MinHeight:     768,
-		MaxWidth:      1280,
-		MaxHeight:     800,
-		DisableResize: false,
-		Frameless:     false,
+		Title:           "Dank Memer Grinder",
+		Width:           1024,
+		Height:          768,
+		MinWidth:        1024,
+		MinHeight:       768,
+		MaxWidth:        1280,
+		MaxHeight:       800,
+		DisableResize:   false,
+		Frameless:       false,
+		DevToolsEnabled: true,
 	})
 
 	app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(event *application.ApplicationEvent) {
@@ -169,6 +170,9 @@ func main() {
 	err = app.Run()
 
 	if err != nil {
+		fmt.Println("WAILS APP RUN ERROR:")
+		fmt.Printf("%+v\n", err)
+		panic(err) // force traceback
 		utils.ShowErrorDialog("A fatal error occurred!", err.Error())
 	}
 }

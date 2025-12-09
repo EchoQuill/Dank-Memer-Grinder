@@ -2,9 +2,10 @@ package instance
 
 import (
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
 	"strings"
 	"time"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
 
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
@@ -46,7 +47,7 @@ func (in *Instance) PostMemesMessageCreate(message gateway.EventMessage) {
 }
 
 func (in *Instance) PostMemesMessageUpdate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 	if strings.Contains(embed.Description, "cannot post another meme for another 3 minutes") {
 		in.LastRan["PostMemes"] = in.LastRan["PostMemes"].Add(3 * time.Minute)
 	}

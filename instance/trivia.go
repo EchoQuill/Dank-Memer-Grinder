@@ -27,7 +27,7 @@ func init() {
 
 func (in *Instance) Trivia(message gateway.EventMessage) {
 	buttons := message.Components[0].(*types.ActionsRow).Components
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	category := embed.Fields[1].Value
 	re := regexp.MustCompile(`\*\*(.*?)\*\*`)

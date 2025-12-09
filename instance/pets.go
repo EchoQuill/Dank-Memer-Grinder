@@ -2,12 +2,13 @@ package instance
 
 import (
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 )
 
 func (in *Instance) getRequiredAction(fields []types.EmbedField) int {
@@ -47,7 +48,7 @@ func getNextPet(petsChooseMenu *types.SelectMenu) int {
 }
 
 func (in *Instance) handlePetsCare(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 	petsChooseMenu := message.Components[0].(*types.ActionsRow).Components[0].(*types.SelectMenu)
 	nextPet := getNextPet(petsChooseMenu)
 

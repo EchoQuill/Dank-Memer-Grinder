@@ -5,17 +5,18 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
-	"github.com/valyala/fasthttp"
-	_ "golang.org/x/image/webp"
 	"image"
 	"regexp"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
+	"github.com/valyala/fasthttp"
+	_ "golang.org/x/image/webp"
 )
 
 const (
@@ -39,10 +40,10 @@ func (in *Instance) FishMessageCreate(message gateway.EventMessage) {
 }
 
 func (in *Instance) FishMessageUpdate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	if strings.Contains(embed.Title, "Fishing Tutorial") && !strings.Contains(embed.Description, "Tutorial is over") {
-		embed = message.Embeds[1]
+		embed = in.FetchEmbed(message, 1)
 
 		for row, rowData := range message.Components {
 			for col, colData := range rowData.(*types.ActionsRow).Components {
@@ -223,7 +224,7 @@ func (in *Instance) FishMessageUpdate(message gateway.EventMessage) {
 			if in.Cfg.Commands.Fish.FishOnly && utils.Rng.Intn(2) == 0 {
 				return
 			}
-		} else if strings.Contains(message.Embeds[1].Description, "Bare Hand") {
+		} else if strings.Contains(in.FetchEmbed(message, 0).Description, "Bare Hand") {
 			// Avoid hold tight error
 			<-utils.Sleep(utils.RandSeconds(2, 5))
 			err := in.ClickButton(message, 0, 0)
@@ -321,7 +322,7 @@ func (in *Instance) FishMessageUpdate(message gateway.EventMessage) {
 		match := regexp.MustCompile(`<t:(\d+):[a-zA-Z]>`).FindStringSubmatch(embed.Fields[1].Value)
 		ts, _ := strconv.ParseInt(match[1], 10, 64)
 		in.LastRan["Fish"] = in.LastRan["Fish"].Add(
-			time.Unix(ts, 0).Sub(time.Now()),
+			time.Until(time.Unix(ts, 0)),
 		)
 	}
 }

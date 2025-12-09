@@ -2,12 +2,13 @@ package instance
 
 import (
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
 )
@@ -145,7 +146,7 @@ func (in *Instance) StartAutoBuy(command string, subCommand string) <-chan AutoB
 }
 
 func (in *Instance) AutoBuyMessageUpdate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	if embed.Title == "Dank Memer Shop" && globalAutoBuyState.itemEmojiName != "" {
 		if strings.Contains(embed.Footer.Text, "Page 1") {
@@ -160,7 +161,7 @@ func (in *Instance) AutoBuyMessageUpdate(message gateway.EventMessage) {
 }
 
 func (in *Instance) AutoBuyMessageCreate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 	if strings.Contains(embed.Description, "You don't have a shovel") && in.Cfg.AutoBuy.Shovel.State {
 		in.setAutoBuyState(0, 1, "IronShovel", 50000)
 	} else if strings.Contains(embed.Description, "You don't have a hunting rifle") && in.Cfg.AutoBuy.HuntingRifle.State {

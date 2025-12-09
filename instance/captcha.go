@@ -2,10 +2,11 @@ package instance
 
 import (
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"strings"
 	"time"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 )
 
 type ApiResponse struct {
@@ -14,7 +15,7 @@ type ApiResponse struct {
 }
 
 func (in *Instance) Captcha(message gateway.EventMessage) bool {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 	if !strings.Contains(embed.Description, "captcha") || len(message.Components) == 0 {
 		return false
 	}
@@ -38,6 +39,10 @@ func (in *Instance) Captcha(message gateway.EventMessage) bool {
 
 func (in *Instance) startCaptchaSolve() (string, error) {
 	code, err := in.Client.GetAuthorizationCode()
+
+	if err != nil {
+		return "", err
+	}
 
 	headers := map[string]string{
 		"api-key":    in.Cfg.ApiKey,

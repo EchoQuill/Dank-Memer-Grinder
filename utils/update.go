@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
-	"github.com/valyala/fasthttp"
 	"io"
 	"net/http"
 	"os"
@@ -12,6 +11,8 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/valyala/fasthttp"
 )
 
 var newBinaryTempPath string

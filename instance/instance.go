@@ -254,8 +254,8 @@ func (in *Instance) shouldHandleMessage(message gateway.EventMessage) bool {
 	if !in.Cfg.State ||
 		!in.AccountCfg.State ||
 		(message.Author.ID != "270904126974590976" && message.Author.ID != "982638853548539924") ||
-		len(message.Embeds) == 0 ||
-		strings.Contains(message.Embeds[0].Description, "cooldown is") {
+		(len(message.Embeds) == 0 && len(message.Components) == 0) ||
+		strings.Contains(in.FetchEmbed(message, 0).Description, "cooldown is") {
 		return false
 	}
 

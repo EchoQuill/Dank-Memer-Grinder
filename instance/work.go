@@ -2,6 +2,7 @@ package instance
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -40,7 +41,10 @@ func getLastUnlockedCYJob(input string) string {
 }
 
 func (in *Instance) WorkMessageCreate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	log.Println("debug: reached here")
+	embed := in.FetchEmbed(message, 0)
+	/*utils.Log(utils.Discord, utils.Error, in.SafeGetUsername(), "hey atleast it starts")*/
+	log.Println("debug: embeded success")
 
 	if strings.Contains(embed.Description, "did not meet the minimum amount of required hours") {
 		err := in.SendSubCommand("work", "shift", nil, true)
@@ -48,12 +52,16 @@ func (in *Instance) WorkMessageCreate(message gateway.EventMessage) {
 			utils.Log(utils.Discord, utils.Error, in.SafeGetUsername(), fmt.Sprintf("Failed to resend /work shift command: %s", err.Error()))
 		}
 	}
+	log.Println("debug: Yoy")
 
 	if !in.Cfg.Commands.Work.AutoWorkApply {
+		/*utils.Log(utils.Discord, utils.Error, in.SafeGetUsername(), "oo we left")*/
 		return
 	}
-
-	if strings.Contains(embed.Description, "You don't currently have a job to work at") {
+	utils.Log(utils.Discord, utils.Info, in.SafeGetUsername(), "we there!")
+	match, _ := in.FindComponentContent(message.Components[0], "You don't currently have a job to work at")
+	utils.Log(utils.Others, utils.Info, in.SafeGetUsername(), "we should be done there!")
+	if match {
 		utils.Log(utils.Others, utils.Info, in.SafeGetUsername(), "Applying for new job")
 		in.PauseCommands(false)
 		err := in.SendSubCommand("work", "list", nil, true)
@@ -76,6 +84,8 @@ func (in *Instance) WorkMessageCreate(message gateway.EventMessage) {
 			utils.Log(utils.Discord, utils.Error, in.SafeGetUsername(), fmt.Sprintf("Failed to send /work shift command: %s", err.Error()))
 		}
 		in.UnpauseCommands()
+	} else {
+		utils.Log(utils.Discord, utils.Error, in.SafeGetUsername(), "ow")
 	}
 }
 
@@ -83,7 +93,7 @@ func (in *Instance) WorkMessageUpdate(message gateway.EventMessage) {
 	if !in.Cfg.Commands.Work.AutoWorkApply {
 		return
 	}
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	if strings.Contains(embed.Title, "Available Jobs") {
 		if len(strings.TrimSpace(getLastUnlockedCYJob(embed.Description))) != 0 {

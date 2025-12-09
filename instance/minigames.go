@@ -2,10 +2,11 @@ package instance
 
 import (
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"regexp"
 	"strings"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
 )
@@ -54,7 +55,7 @@ func generateEmojiActions(emojis []string) map[string]int {
 }
 
 func (in *Instance) solveMinigame(message gateway.EventMessage, gameName string, gameTrigger string, emojis []string) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	if strings.Contains(embed.Description, gameTrigger) {
 		utils.Log(utils.Others, utils.Info, in.SafeGetUsername(), fmt.Sprintf("Solving %s minigame", gameName))
@@ -73,7 +74,7 @@ func (in *Instance) solveMinigame(message gateway.EventMessage, gameName string,
 }
 
 func (in *Instance) MinigamesMessageCreate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	// Dragon
 	in.solveMinigame(message, "Dragon", "Dodge the Dragon's Fireball", []string{fireBall})
@@ -128,7 +129,7 @@ func (in *Instance) MinigamesMessageCreate(message gateway.EventMessage) {
 }
 
 func (in *Instance) MinigamesMessageUpdate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	// Football
 	in.solveMinigame(message, "Football", "Hit the ball!", []string{levitate})

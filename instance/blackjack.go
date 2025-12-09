@@ -2,12 +2,13 @@ package instance
 
 import (
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 )
 
 var wins, losses, total int
@@ -366,7 +367,7 @@ func (in *Instance) handleButtonClick(message gateway.EventMessage, result int) 
 }
 
 func (in *Instance) processBlackjackMessage(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 	var result string
 
 	switch embed.Color {
@@ -412,7 +413,7 @@ func (in *Instance) BlackjackMessageUpdate(message gateway.EventMessage) {
 }
 
 func (in *Instance) handleBlackjackMessage(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	if strings.Contains(embed.Author.Name, "Blackjack Game") && embed.Color == 2829617 {
 		var playerHandField types.EmbedField

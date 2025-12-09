@@ -27,7 +27,7 @@ func init() {
 }
 
 func (in *Instance) EventsMessageCreate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	if embed.Color == 16044763 && in.Cfg.EventsCorrectChance != 0 {
 		// General random events color
@@ -157,7 +157,7 @@ func (in *Instance) EventsMessageCreate(message gateway.EventMessage) {
 			re := regexp.MustCompile(`(\d+)\.(png|gif)$`)
 			matches := re.FindStringSubmatch(embed.Image.URL)
 
-			if matches == nil || len(matches) < 2 {
+			if len(matches) < 2 {
 				utils.Log(utils.Important, utils.Error, in.SafeGetUsername(),
 					"Failed to extract image ID from URL")
 				return
@@ -185,11 +185,6 @@ func (in *Instance) EventsMessageCreate(message gateway.EventMessage) {
 					utils.Log(utils.Important, utils.Error, in.SafeGetUsername(),
 						fmt.Sprintf("Failed to send fish guesser chat message: %s", err.Error()))
 				}
-			}
-		} else if embed.Title == "Dice Champs" {
-			err := in.ClickButton(message, 0, 0)
-			if err != nil {
-				utils.Log(utils.Important, utils.Error, in.SafeGetUsername(), fmt.Sprintf("Failed to click dice champs button: %s", err.Error()))
 			}
 		}
 	}

@@ -45,7 +45,7 @@ class Cfg {
 		});
 
 		Events.On("configUpdate", (data: { data: [newCfg: Config] }) => {
-			this.c = data.data[0];
+			Object.assign(this.c, data.data[0]);
 		});
 
 		this.fetch();

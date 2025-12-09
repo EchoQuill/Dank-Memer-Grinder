@@ -2,18 +2,19 @@ package instance
 
 import (
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
+
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
 )
 
 func (in *Instance) Adventure(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 	adventureOption := in.Cfg.Commands.Adventure.AdventureOption
 
 	if strings.Contains(embed.Description, "> You can start another adventure at <t:") {

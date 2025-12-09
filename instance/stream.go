@@ -2,13 +2,14 @@ package instance
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
 	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"github.com/valyala/fasthttp"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var trendingGame string
@@ -28,7 +29,7 @@ func (in *Instance) handleOrderedClick(message gateway.EventMessage) error {
 }
 
 func (in *Instance) StreamMessageCreate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	if !strings.Contains(embed.Author.Name, "Stream Manager") {
 		return
@@ -62,7 +63,7 @@ func (in *Instance) StreamMessageCreate(message gateway.EventMessage) {
 }
 
 func (in *Instance) StreamMessageUpdate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	if strings.Contains(embed.Description, "What game do you want to stream?") {
 		chooseMenu := message.Components[0].(*types.ActionsRow).Components[0].(*types.SelectMenu)

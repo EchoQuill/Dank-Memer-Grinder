@@ -2,13 +2,14 @@ package instance
 
 import (
 	"fmt"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
-	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 	"reflect"
 	"regexp"
 	"strings"
 	"unicode"
+
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/discord/types"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/gateway"
+	"github.com/BridgeSenseDev/Dank-Memer-Grinder/utils"
 )
 
 func addSpaces(s string) string {
@@ -40,7 +41,7 @@ func extractItems(input string) []string {
 }
 
 func (in *Instance) AutoUse(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	if embed.Title == "Item Expiration" {
 		val := reflect.ValueOf(in.Cfg.AutoUse)
@@ -62,7 +63,7 @@ func (in *Instance) AutoUse(message gateway.EventMessage) {
 }
 
 func (in *Instance) ProfileMessageCreate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	if embed.Title == in.SafeGetUsername() {
 		in.PauseCommands(false)
@@ -74,7 +75,7 @@ func (in *Instance) ProfileMessageCreate(message gateway.EventMessage) {
 }
 
 func (in *Instance) ProfileMessageUpdate(message gateway.EventMessage) {
-	embed := message.Embeds[0]
+	embed := in.FetchEmbed(message, 0)
 
 	if embed.Title == fmt.Sprintf(`%s's active items`, in.SafeGetUsername()) {
 		items := extractItems(embed.Description)
@@ -84,7 +85,7 @@ func (in *Instance) ProfileMessageUpdate(message gateway.EventMessage) {
 			if val.Field(i).FieldByName("State").Bool() {
 				itemIsUsed := false
 				for _, item := range items {
-					if strings.ToLower(strings.ReplaceAll(item, " ", "")) == strings.ToLower(val.Type().Field(i).Name) {
+					if strings.EqualFold(strings.ReplaceAll(item, " ", ""), val.Type().Field(i).Name) {
 						itemIsUsed = true
 						break
 					}
